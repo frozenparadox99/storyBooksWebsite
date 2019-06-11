@@ -1,7 +1,8 @@
 const express=require('express');
 const path=require('path');
 const exphbs  = require('express-handlebars');
-const bodyParser=require('body-parser')
+const bodyParser=require('body-parser');
+const methodOverride = require('method-override')
 const mongoose=require('mongoose');
 const cookieParser=require('cookie-parser');
 const session = require('express-session')
@@ -18,6 +19,8 @@ const stories=require('./routes/stories');
 
 const keys=require('./config/keys');
 
+const {truncate,stripTags,formatDate,select,editIcon} = require('./helpers/hbs');
+
 mongoose.Promise=global.Promise;
 mongoose.connect(keys.mongoURI, {useNewUrlParser: true})
 .then(()=>{
@@ -26,12 +29,19 @@ mongoose.connect(keys.mongoURI, {useNewUrlParser: true})
 .catch(err=>console.log(err));
 
 const app=express();
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
-app.use(bodyParser.json())
-
+app.use(methodOverride('_method'));
 
 app.engine('handlebars', exphbs({
+    helpers:{
+        truncate:truncate,
+        stripTags:stripTags,
+        formatDate:formatDate,
+        select:select,
+        editIcon:editIcon
+    },
     defaultLayout:'main'
 }));
 app.set('view engine', 'handlebars');
